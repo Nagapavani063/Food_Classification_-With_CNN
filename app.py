@@ -1,6 +1,9 @@
 import os
+
+# ================= TF ENV (MUST BE FIRST) =================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_USE_LEGACY_KERAS'] = '1'   # IMPORTANT for Render
 
 from flask import Flask, render_template, request, jsonify
 import tensorflow as tf
@@ -21,53 +24,71 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ================= LOAD MODELS =================
-print("Loading models...")
+# ================= GLOBAL VARIABLES =================
+custom_cnn_model = None
+resnet_model = None
+vgg16_model = None
 
-custom_cnn_model = tf.keras.models.load_model(
-    'models/custom_weights.keras',
-    compile=False
-)
+class_indices = None
+class_names = None
+class_names_list = None
 
-resnet_model = tf.keras.models.load_model(
-    'models/resnet50_model.keras',
-    compile=False
-)
+custom_metrics = None
+resnet_metrics = None
+vgg16_metrics = None
 
-vgg16_model = tf.keras.models.load_model(
-    'models/vgg16_model.keras',
-    compile=False
-)
+food_data = None
 
-print("✅ Models Loaded Successfully")
+# ================= LOAD MODELS (LAZY SAFE LOADING) =================
+def load_models():
+    global custom_cnn_model, resnet_model, vgg16_model
+    global class_indices, class_names, class_names_list
+    global custom_metrics, resnet_metrics, vgg16_metrics
+    global food_data
 
-# ================= CLASS MAPPING =================
-with open('json/class_indices.json', 'r') as f:
-    class_indices = json.load(f)
+    print("Loading models...")
 
-class_names = {v: k for k, v in class_indices.items()}
-class_names_list = list(class_names.values())
+    custom_cnn_model = tf.keras.models.load_model(
+        'models/custom_weights.keras',
+        compile=False
+    )
 
-# ================= LOAD METRICS =================
-with open('json/custom_CNN_metrics (1).json', 'r') as f:
-    custom_metrics = json.load(f)
+    resnet_model = tf.keras.models.load_model(
+        'models/resnet50_model.keras',
+        compile=False
+    )
 
-with open('json/resnet_CNN_metrics.json', 'r') as f:
-    resnet_metrics = json.load(f)
+    vgg16_model = tf.keras.models.load_model(
+        'models/vgg16_model.keras',
+        compile=False
+    )
 
-with open('json/vgg16_CNN_metrics.json', 'r') as f:
-    vgg16_metrics = json.load(f)
+    print("✅ Models Loaded Successfully")
 
-# ================= LOAD FOOD DATA =================
-with open('json/food_nutrition.json', 'r') as f:
-    food_data = json.load(f)
+    # ================= JSON FILES =================
+    with open('json/class_indices.json', 'r') as f:
+        class_indices = json.load(f)
 
-print("✅ JSON Files Loaded Successfully")
+    class_names = {v: k for k, v in class_indices.items()}
+    class_names_list = list(class_names.values())
+
+    with open('json/custom_CNN_metrics (1).json', 'r') as f:
+        custom_metrics = json.load(f)
+
+    with open('json/resnet_CNN_metrics.json', 'r') as f:
+        resnet_metrics = json.load(f)
+
+    with open('json/vgg16_CNN_metrics.json', 'r') as f:
+        vgg16_metrics = json.load(f)
+
+    with open('json/food_nutrition.json', 'r') as f:
+        food_data = json.load(f)
+
+    print("✅ JSON Files Loaded Successfully")
 
 
-# ================= HELPER: Extract Class Metrics =================
+# ================= HELPER FUNCTIONS =================
 def extract_class_metrics(metrics_data, predicted_class):
-
     block = metrics_data.get(predicted_class, {})
 
     if not block:
@@ -78,23 +99,16 @@ def extract_class_metrics(metrics_data, predicted_class):
 
     if block and "classification_report" in block:
         report = block["classification_report"]
-
         return {
             "precision": round(float(report.get("precision", 0)), 2),
             "recall": round(float(report.get("recall", 0)), 2),
             "f1-score": round(float(report.get("f1-score", 0)), 2)
         }
 
-    return {
-        "precision": "N/A",
-        "recall": "N/A",
-        "f1-score": "N/A"
-    }
+    return {"precision": "N/A", "recall": "N/A", "f1-score": "N/A"}
 
 
-# ================= HELPER: Extract Accuracy =================
 def extract_accuracy(metrics_data, predicted_class):
-
     block = metrics_data.get(predicted_class, {})
 
     if not block:
@@ -104,37 +118,29 @@ def extract_accuracy(metrics_data, predicted_class):
                 break
 
     if block and "overall_model_accuracy" in block:
-        val = float(block["overall_model_accuracy"])
-        return round(val * 100, 2)
+        return round(float(block["overall_model_accuracy"]) * 100, 2)
 
     return "N/A"
 
 
-# ================= IMAGE PREPROCESS =================
 def preprocess_image(path):
-
     img = Image.open(path).convert('RGB')
     img = img.resize((224, 224))
     img = np.array(img) / 255.0
-    img = np.expand_dims(img, axis=0)
-
-    return img
+    return np.expand_dims(img, axis=0)
 
 
-# ================= HOME =================
+# ================= ROUTES =================
 @app.route('/')
 def home():
-    return render_template(
-        'index.html',
-        class_names=class_names_list
-    )
+    return render_template('index.html', class_names=class_names_list)
 
 
-# ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
 def predict():
-
     try:
+        if custom_cnn_model is None:
+            load_models()   # LOAD ONLY WHEN NEEDED
 
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"})
@@ -143,107 +149,62 @@ def predict():
         model_name = request.form.get('model')
 
         filename = secure_filename(image.filename)
-
-        filepath = os.path.join(
-            app.config['UPLOAD_FOLDER'],
-            filename
-        )
-
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image.save(filepath)
 
         img = preprocess_image(filepath)
 
         # ================= MODEL SELECTION =================
         if model_name == 'customcnn':
-
             model = custom_cnn_model
             metrics_data = custom_metrics
 
         elif model_name == 'resnet':
-
             model = resnet_model
             metrics_data = resnet_metrics
 
         elif model_name == 'vgg16':
-
             model = vgg16_model
             metrics_data = vgg16_metrics
 
         else:
-            return jsonify({
-                "error": "Invalid model selected"
-            })
+            return jsonify({"error": "Invalid model selected"})
 
         # ================= PREDICTION =================
         pred = model.predict(img)
-
         index = int(np.argmax(pred))
+        confidence = round(float(np.max(pred)) * 100, 2)
 
-        confidence = round(
-            float(np.max(pred)) * 100,
-            2
-        )
-
-        predicted_class = class_names.get(
-            index,
-            "Unknown"
-        )
-
+        predicted_class = class_names.get(index, "Unknown")
         detected_image = "/" + filepath
 
-        # ================= METRICS =================
-        class_report = extract_class_metrics(
-            metrics_data,
-            predicted_class
-        )
+        class_report = extract_class_metrics(metrics_data, predicted_class)
+        accuracy = extract_accuracy(metrics_data, predicted_class)
 
-        accuracy = extract_accuracy(
-            metrics_data,
-            predicted_class
-        )
-
-        # ================= NUTRITION =================
         nutrition = (
             food_data.get(predicted_class)
             or food_data.get(predicted_class.lower())
-            or {
-                "Calories": "N/A",
-                "Protein": "N/A",
-                "Fat": "N/A"
-            }
+            or {"Calories": "N/A", "Protein": "N/A", "Fat": "N/A"}
         )
 
-        # ================= RESPONSE =================
         return jsonify({
-
             "predicted_class": predicted_class,
-
             "confidence": confidence,
-
             "accuracy": accuracy,
-
             "detected_image": detected_image,
-
             "nutrition": nutrition,
-
             "class_report": class_report
         })
 
     except Exception as e:
-
         traceback.print_exc()
-
-        return jsonify({
-            "error": str(e)
-        })
+        return jsonify({"error": str(e)})
 
 
 # ================= RUN =================
 if __name__ == '__main__':
-
     port = int(os.environ.get("PORT", 5000))
 
-    app.run(
-        host='0.0.0.0',
-        port=port
-    )
+    load_models()   # load safely before serving
+
+    app.run(host='0.0.0.0', port=port)
