@@ -44,9 +44,18 @@ except Exception as e:
 # ================= LOAD MODELS =================
 print("Loading models...")
 
-custom_cnn_model = tf.keras.models.load_model('models/custom_weights.keras')
-resnet_model     = tf.keras.models.load_model('models/resnet_weights.keras')
-vgg16_model      = tf.keras.models.load_model('models/vgg16_weights.keras')
+custom_cnn_model = custom_cnn_model = tf.keras.models.load_model(
+    'models/custom_weights.keras',
+    compile=False
+)
+resnet_model     = resnet_model = tf.keras.models.load_model(
+    'models/resnet50_model.keras',
+    compile=False
+)
+vgg16_model      = vgg16_model = tf.keras.models.load_model(
+    'models/vgg16_model.keras',
+    compile=False
+)
 
 print("✅ Models Loaded Successfully")
 
@@ -213,5 +222,5 @@ def predict():
 
 
 # ================= RUN =================
-if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
