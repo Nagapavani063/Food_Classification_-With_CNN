@@ -3,7 +3,6 @@ import os
 # ================= TF ENV (MUST BE FIRST) =================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['TF_USE_LEGACY_KERAS'] = '1'
 
 from flask import Flask, render_template, request, jsonify
 import tensorflow as tf
@@ -29,7 +28,8 @@ custom_cnn_model = None
 resnet_model = None
 vgg16_model = None
 
-class_names_list = []   # ✅ FIX: prevent None error
+class_names_list = []
+class_names = {}
 
 custom_metrics = None
 resnet_metrics = None
@@ -42,51 +42,61 @@ food_data = None
 def load_models():
     global custom_cnn_model, resnet_model, vgg16_model
     global custom_metrics, resnet_metrics, vgg16_metrics
-    global food_data, class_names_list
+    global food_data, class_names, class_names_list
 
-    print("Loading models...")
+    try:
+        print("Loading models...")
 
-    custom_cnn_model = tf.keras.models.load_model(
-        'models/custom_weights.keras',
-        compile=False
-    )
+        custom_cnn_model = tf.keras.models.load_model(
+            'models/custom_weights.keras',
+            compile=False
+        )
 
-    resnet_model = tf.keras.models.load_model(
-        'models/resnet50_model.keras',
-        compile=False
-    )
+        resnet_model = tf.keras.models.load_model(
+            'models/resnet50_model.keras',
+            compile=False
+        )
 
-    vgg16_model = tf.keras.models.load_model(
-        'models/vgg16_model.keras',
-        compile=False
-    )
+        vgg16_model = tf.keras.models.load_model(
+            'models/vgg16_model.keras',
+            compile=False
+        )
 
-    print("✅ Models Loaded Successfully")
+        print("✅ Models Loaded Successfully")
 
-    # ================= JSON FILES =================
-    with open('json/class_indices.json', 'r') as f:
-        class_indices = json.load(f)
+        # ================= JSON FILES =================
+        with open('json/class_indices.json', 'r') as f:
+            class_indices = json.load(f)
 
-    class_names = {v: k for k, v in class_indices.items()}
-    class_names_list = list(class_names.values())
+        class_names = {v: k for k, v in class_indices.items()}
+        class_names_list = list(class_names.values())
 
-    with open('json/custom_CNN_metrics (1).json', 'r') as f:
-        custom_metrics = json.load(f)
+        with open('json/custom_CNN_metrics (1).json', 'r') as f:
+            custom_metrics = json.load(f)
 
-    with open('json/resnet_CNN_metrics.json', 'r') as f:
-        resnet_metrics = json.load(f)
+        with open('json/resnet_CNN_metrics.json', 'r') as f:
+            resnet_metrics = json.load(f)
 
-    with open('json/vgg16_CNN_metrics.json', 'r') as f:
-        vgg16_metrics = json.load(f)
+        with open('json/vgg16_CNN_metrics.json', 'r') as f:
+            vgg16_metrics = json.load(f)
 
-    with open('json/food_nutrition.json', 'r') as f:
-        food_data = json.load(f)
+        with open('json/food_nutrition.json', 'r') as f:
+            food_data = json.load(f)
 
-    print("✅ JSON Files Loaded Successfully")
+        print("✅ JSON Files Loaded Successfully")
+
+    except Exception as e:
+        print("❌ ERROR loading models/files:", e)
+        custom_cnn_model = None
+        resnet_model = None
+        vgg16_model = None
 
 
 # ================= HELPERS =================
 def extract_class_metrics(metrics_data, predicted_class):
+    if not metrics_data:
+        return {"precision": "N/A", "recall": "N/A", "f1-score": "N/A"}
+
     block = metrics_data.get(predicted_class, {})
 
     if not block:
@@ -107,6 +117,9 @@ def extract_class_metrics(metrics_data, predicted_class):
 
 
 def extract_accuracy(metrics_data, predicted_class):
+    if not metrics_data:
+        return "N/A"
+
     block = metrics_data.get(predicted_class, {})
 
     if not block:
@@ -201,7 +214,6 @@ def predict():
 
 # ================= RUN =================
 if __name__ == '__main__':
-    load_models()   # ✅ IMPORTANT: load before server starts
-
+    load_models()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
