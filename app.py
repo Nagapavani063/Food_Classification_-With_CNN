@@ -7,7 +7,7 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image, ImageFile
 import json
-import redis
+#import redis
 from werkzeug.utils import secure_filename
 import warnings
 import traceback
@@ -23,23 +23,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ================= REDIS =================
-redis_client = redis.Redis(
-    host='127.0.0.1',
-    port=6379,
-    decode_responses=True
-)
-
-food_data = {}
-
-try:
-    food_data_json = redis_client.get("food_details")
-    if food_data_json:
-        food_data = json.loads(food_data_json)
-        print("✅ Food data loaded from Redis")
-    else:
-        print("⚠️ No food data found in Redis")
-except Exception as e:
-    print("Redis Error:", e)
+#
 
 # ================= LOAD MODELS =================
 print("Loading models...")
@@ -222,5 +206,5 @@ def predict():
 
 
 # ================= RUN =================
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(debug=True)
