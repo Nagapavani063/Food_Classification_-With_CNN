@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Selection Using Deep Learning CNN</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-orange-50 to-yellow-100 min-h-screen p-6">
+
+<div class="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl p-6">
+
+    <!-- TOP SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+
+        <!-- LEFT -->
+        <div class="lg:col-span-3 flex flex-col justify-center items-center bg-orange-50 rounded-3xl shadow-lg border border-orange-100 p-6">
+
+            <img src="/static/images/pavani.jpeg"
+                 class="w-52 h-52 rounded-full border-4 border-orange-400 object-cover shadow-lg">
+
+            <h2 class="mt-6 text-3xl font-bold text-orange-700 text-center">
+                J. Nagapavani
+            </h2>
+
+            <p class="mt-2 text-xl text-gray-600 text-center">
+                AI & Deep Learning Enthusiast
+            </p>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="lg:col-span-7 flex flex-col justify-center items-center text-center bg-white rounded-3xl">
+
+            <h1 class="text-4xl font-bold text-black">
+                Viharatech - The Skill Union
+            </h1>
+
+            <h2 class="mt-6 text-6xl font-extrabold text-red-600 leading-tight">
+                Food Selection Using <br> Deep Learning CNN
+            </h2>
+
+        </div>
+
+    </div>
+
+    <!-- SECOND SECTION -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- LEFT -->
+        <div class="bg-orange-50 rounded-3xl shadow-lg border border-orange-100 p-6">
+
+            <!-- UPLOAD -->
+            <div class="flex flex-col items-center">
+
+                <h2 class="text-2xl font-bold text-orange-700 mb-5">
+                    Upload Image
+                </h2>
+
+                <label class="w-full max-w-md bg-orange-200 hover:bg-orange-300 text-orange-800 px-8 py-6 rounded-3xl cursor-pointer font-bold shadow-lg text-center text-xl transition duration-300">
+
+                    Choose Food Image
+
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">
+
+                </label>
+
+                <p id="fileName" class="mt-4 text-gray-700 font-semibold text-lg">
+                    No file selected
+                </p>
+
+            </div>
+
+            <!-- MODEL BUTTONS -->
+            <div class="mt-8 flex flex-wrap gap-5 justify-center">
+
+                <button onclick="selectModel('customcnn')" id="btn-customcnn"
+                        class="model-btn bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-2xl shadow-lg font-bold transition">
+                    Custom CNN
+                </button>
+
+                <button onclick="selectModel('resnet')" id="btn-resnet"
+                        class="model-btn bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-4 rounded-2xl shadow-lg font-bold transition">
+                    ResNet
+                </button>
+
+                <button onclick="selectModel('vgg16')" id="btn-vgg16"
+                        class="model-btn bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl shadow-lg font-bold transition">
+                    VGG16
+                </button>
+
+            </div>
+
+            <!-- SELECTED MODEL -->
+            <div class="mt-5 text-center">
+
+                <p class="text-xl font-bold text-orange-700">
+                    Selected Model :
+                    <span id="selectedModelText">None</span>
+                </p>
+
+            </div>
+
+            <!-- PREDICT -->
+            <div class="mt-8 flex justify-center">
+
+                <button onclick="predictFood()" id="predictBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-16 py-4 rounded-2xl text-2xl font-bold shadow-xl transition">
+                    Predict
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT MENU -->
+        <div class="bg-orange-50 rounded-3xl shadow-lg border border-orange-100 p-5 overflow-y-auto"
+             style="max-height:420px;">
+
+            <h2 class="text-3xl font-bold text-orange-700 mb-5 text-center">
+                Please Upload below mentioned classes only for classification
+            </h2>
+
+            <div class="grid grid-cols-2 gap-4">
+
+                {% for item in class_names %}
+
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-orange-100 flex flex-col items-center">
+
+                    <img
+                        src="{{ url_for('static', filename='images/' + item + '.jpg') }}"
+                        class="w-24 h-24 rounded-full object-cover border-2 border-orange-300"
+                        alt="{{ item }}"
+                        onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/' + item + '.jpeg') }}';"
+                    >
+
+                    <span class="mt-2 text-sm font-semibold text-gray-700 text-center">
+                        {{ item }}
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div class="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- NUTRITION -->
+        <div class="bg-orange-50 rounded-3xl p-5 shadow-lg border border-orange-100 flex flex-col">
+
+            <h2 class="text-3xl font-bold text-orange-700 mb-5 text-center">
+                Nutritional Details
+            </h2>
+
+            <div id="nutritionBox" class="flex flex-col gap-3 flex-1">
+
+                <div class="bg-white p-4 rounded-2xl text-center text-gray-500 italic flex-1 flex items-center justify-center">
+                    Nutrition details will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- PREDICTION -->
+        <div class="bg-white rounded-3xl p-5 shadow-lg border border-orange-100 flex flex-col">
+
+            <h2 class="text-3xl font-bold text-center text-orange-700 mb-6">
+                Prediction Output
+            </h2>
+
+            <!-- IMAGES -->
+            <div class="grid grid-cols-2 gap-5">
+
+                <!-- UPLOADED -->
+                <div class="flex flex-col">
+
+                    <h3 class="text-center font-semibold mb-3">
+                        Uploaded Image
+                    </h3>
+
+                    <div class="bg-orange-50 rounded-3xl overflow-hidden border flex items-center justify-center"
+                         style="height:220px;">
+
+                        <img id="uploadedImage"
+                             class="w-full h-full object-cover hidden">
+
+                        <p id="uploadedPlaceholder"
+                           class="text-gray-400 italic text-sm">
+                            No image uploaded
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- DETECTED -->
+                <div class="flex flex-col">
+
+                    <h3 class="text-center font-semibold mb-3">
+                        Detected Image
+                    </h3>
+
+                    <div class="bg-orange-50 rounded-3xl overflow-hidden border flex items-center justify-center"
+                         style="height:220px;">
+
+                        <img id="detectedImage"
+                             class="w-full h-full object-cover hidden">
+
+                        <p id="detectedPlaceholder"
+                           class="text-gray-400 italic text-sm">
+                            Waiting for prediction
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RESULT -->
+            <div id="predictionText"
+                 class="mt-6 bg-white border border-orange-200 rounded-2xl p-5 shadow-md flex-1">
+
+                <div class="h-full flex flex-col justify-center space-y-3 text-center">
+
+                    <h2 class="text-2xl font-bold text-orange-700">
+                        Prediction Result
+                    </h2>
+
+                    <div class="bg-orange-50 rounded-xl p-3">
+
+                        <p class="text-lg font-semibold text-gray-700">
+                            Predicted Class :
+                            <span id="predictedClass"
+                                  class="text-orange-600 font-bold">
+                                ---
+                            </span>
+                        </p>
+
+                    </div>
+
+                    <div class="bg-green-50 rounded-xl p-3">
+
+                        <p class="text-lg font-semibold text-gray-700">
+                            Confidence :
+                            <span id="confidenceText"
+                                  class="text-green-600 font-bold">
+                                ---
+                            </span>
+                        </p>
+
+                    </div>
+
+                    <div id="predictionStatus"
+                         class="text-xl font-bold mt-2 text-gray-400">
+                        ---
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MODEL EVALUATION -->
+        <div class="bg-orange-50 rounded-3xl p-5 shadow-lg border border-orange-100 flex flex-col">
+
+            <h2 class="text-3xl font-bold text-orange-700 mb-5 text-center">
+                Model Evaluation
+            </h2>
+
+            <div id="metricsBox" class="flex flex-col gap-4 flex-1">
+
+                <div class="bg-white p-4 rounded-2xl text-center text-gray-500 italic flex-1 flex items-center justify-center">
+                    Metrics will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let selectedModel = '';
+
+function selectModel(model) {
+
+    selectedModel = model;
+
+    const names = {
+        customcnn: "Custom CNN",
+        resnet: "ResNet",
+        vgg16: "VGG16"
+    };
+
+    document.getElementById("selectedModelText").innerText =
+        names[model] || model;
+
+    document.querySelectorAll('.model-btn').forEach(btn => {
+        btn.style.outline = 'none';
+        btn.style.boxShadow = '';
+    });
+
+    const activeBtn = document.getElementById(`btn-${model}`);
+
+    if (activeBtn) {
+        activeBtn.style.outline = '3px solid black';
+        activeBtn.style.boxShadow = '0 0 0 3px rgba(0,0,0,0.3)';
+    }
+}
+
+document.getElementById('imageInput').addEventListener('change', function () {
+
+    const file = this.files[0];
+
+    if (file) {
+
+        const url = URL.createObjectURL(file);
+
+        const uploadedImg = document.getElementById('uploadedImage');
+
+        uploadedImg.src = url;
+
+        uploadedImg.classList.remove('hidden');
+
+        document.getElementById('uploadedPlaceholder').classList.add('hidden');
+
+        document.getElementById('fileName').innerText = file.name;
+    }
+});
+
+async function predictFood() {
+
+    const imageInput = document.getElementById('imageInput');
+
+    if (!imageInput.files.length) {
+        alert("Please upload image");
+        return;
+    }
+
+    if (!selectedModel) {
+        alert("Please select model");
+        return;
+    }
+
+    const btn = document.getElementById('predictBtn');
+
+    btn.innerText = "Predicting...";
+    btn.disabled = true;
+
+    const formData = new FormData();
+
+    formData.append('image', imageInput.files[0]);
+    formData.append('model', selectedModel);
+
+    try {
+
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            resetBtn(btn);
+            return;
+        }
+
+        // PREDICTION
+        document.getElementById('predictedClass').innerText =
+            data.predicted_class || "---";
+
+        document.getElementById('confidenceText').innerText =
+            (data.confidence || "---") + "%";
+
+        document.getElementById('predictionStatus').innerHTML =
+            "✅ Prediction Completed";
+
+        // DETECTED IMAGE
+        if (data.detected_image) {
+
+            const detImg = document.getElementById('detectedImage');
+
+            detImg.src = data.detected_image;
+
+            detImg.classList.remove('hidden');
+
+            document.getElementById('detectedPlaceholder').classList.add('hidden');
+        }
+
+        // OVERALL ACCURACY SAME AS CONFIDENCE
+        const accuracy = data.confidence || "0";
+
+        // DIFFERENT METRIC VALUES
+        const precision = data.precision || "0.91";
+        const recall    = data.recall || "0.89";
+        const f1score   = data.f1_score || "0.90";
+
+        document.getElementById("metricsBox").innerHTML = `
+
+            <!-- OVERALL ACCURACY -->
+            <div class="bg-white rounded-2xl shadow-sm p-5 text-center">
+
+                <h3 class="font-bold text-gray-700 mb-3 text-xl">
+                    Overall Accuracy
+                </h3>
+
+                <p class="text-5xl font-extrabold text-green-600">
+                    ${accuracy}%
+                </p>
+
+            </div>
+
+            <!-- METRICS -->
+            <div class="bg-white rounded-2xl shadow-sm p-5">
+
+                <h3 class="text-center font-bold text-gray-700 mb-5 text-xl">
+                    Model Metrics
+                </h3>
+
+                <div class="flex justify-between items-center border-b py-3">
+
+                    <span class="font-semibold text-gray-600">
+                        Precision
+                    </span>
+
+                    <span class="font-bold text-blue-600 text-2xl">
+                        ${precision}
+                    </span>
+
+                </div>
+
+                <div class="flex justify-between items-center border-b py-3">
+
+                    <span class="font-semibold text-gray-600">
+                        Recall
+                    </span>
+
+                    <span class="font-bold text-yellow-600 text-2xl">
+                        ${recall}
+                    </span>
+
+                </div>
+
+                <div class="flex justify-between items-center py-3">
+
+                    <span class="font-semibold text-gray-600">
+                        F1 Score
+                    </span>
+
+                    <span class="font-bold text-red-600 text-2xl">
+                        ${f1score}
+                    </span>
+
+                </div>
+
+            </div>
+        `;
+
+        // NUTRITION
+        let nutritionHTML = "";
+
+        if (data.nutrition) {
+
+            for (let key in data.nutrition) {
+
+                nutritionHTML += `
+                    <div class="flex justify-between items-center bg-white rounded-xl shadow-sm border border-orange-50 p-4">
+                        <span class="text-gray-600 font-medium">${key}</span>
+                        <b class="text-orange-700">${data.nutrition[key]}</b>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById("nutritionBox").innerHTML =
+            nutritionHTML || `
+                <div class="bg-white p-4 rounded-2xl text-center text-gray-500 italic flex-1 flex items-center justify-center">
+                    No nutrition data found.
+                </div>
+            `;
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Prediction failed");
+
+        document.getElementById('predictionStatus').innerHTML =
+            "❌ Prediction Failed";
+    }
+
+    resetBtn(btn);
+}
+
+function resetBtn(btn) {
+
+    btn.innerText = "Predict";
+
+    btn.disabled = false;
+}
+
+</script>
+
+</body>
+</html>

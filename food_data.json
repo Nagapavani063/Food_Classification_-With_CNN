@@ -1,0 +1,247 @@
+{
+    "apple_pie": {
+        "calories": 264,
+        "protein": 10.8,
+        "fat": 13.5,
+        "carbs": 26.0,
+        "fiber": 7.7
+    },
+    "Baked Potato": {
+        "calories": 385,
+        "protein": 7.0,
+        "fat": 7.2,
+        "carbs": 58.5,
+        "fiber": 6.0
+    },
+    "burger": {
+        "calories": 380,
+        "protein": 8.5,
+        "fat": 16.6,
+        "carbs": 42.5,
+        "fiber": 3.0
+    },
+    "butter_naan": {
+        "calories": 154,
+        "protein": 2.3,
+        "fat": 21.2,
+        "carbs": 27.8,
+        "fiber": 8.9
+    },
+    "chai": {
+        "calories": 203,
+        "protein": 11.5,
+        "fat": 24.5,
+        "carbs": 57.2,
+        "fiber": 8.0
+    },
+    "chapati": {
+        "calories": 365,
+        "protein": 14.5,
+        "fat": 22.3,
+        "carbs": 46.0,
+        "fiber": 6.9
+    },
+    "cheesecake": {
+        "calories": 371,
+        "protein": 2.9,
+        "fat": 15.2,
+        "carbs": 34.8,
+        "fiber": 3.4
+    },
+    "chicken_curry": {
+        "calories": 228,
+        "protein": 16.9,
+        "fat": 15.7,
+        "carbs": 50.2,
+        "fiber": 3.6
+    },
+    "chole_bhature": {
+        "calories": 165,
+        "protein": 2.6,
+        "fat": 23.4,
+        "carbs": 31.5,
+        "fiber": 2.8
+    },
+    "Crispy Chicken": {
+        "calories": 239,
+        "protein": 2.7,
+        "fat": 20.5,
+        "carbs": 58.8,
+        "fiber": 1.2
+    },
+    "dal_makhani": {
+        "calories": 346,
+        "protein": 18.6,
+        "fat": 14.0,
+        "carbs": 59.1,
+        "fiber": 3.1
+    },
+    "dhokla": {
+        "calories": 233,
+        "protein": 11.2,
+        "fat": 11.6,
+        "carbs": 41.1,
+        "fiber": 2.2
+    },
+    "Donut": {
+        "calories": 154,
+        "protein": 15.9,
+        "fat": 7.7,
+        "carbs": 22.7,
+        "fiber": 9.5
+    },
+    "fried_rice": {
+        "calories": 184,
+        "protein": 3.9,
+        "fat": 21.1,
+        "carbs": 25.0,
+        "fiber": 4.4
+    },
+    "Fries": {
+        "calories": 195,
+        "protein": 11.0,
+        "fat": 20.9,
+        "carbs": 46.7,
+        "fiber": 8.5
+    },
+    "Hot Dog": {
+        "calories": 381,
+        "protein": 6.0,
+        "fat": 7.9,
+        "carbs": 56.9,
+        "fiber": 2.8
+    },
+    "ice_cream": {
+        "calories": 296,
+        "protein": 17.6,
+        "fat": 14.5,
+        "carbs": 38.7,
+        "fiber": 2.2
+    },
+    "idli": {
+        "calories": 210,
+        "protein": 16.9,
+        "fat": 24.1,
+        "carbs": 56.3,
+        "fiber": 3.4
+    },
+    "jalebi": {
+        "calories": 291,
+        "protein": 15.4,
+        "fat": 11.8,
+        "carbs": 31.0,
+        "fiber": 4.3
+    },
+    "kaathi_rolls": {
+        "calories": 204,
+        "protein": 4.5,
+        "fat": 16.9,
+        "carbs": 57.4,
+        "fiber": 2.7
+    },
+    "kadai_paneer": {
+        "calories": 202,
+        "protein": 17.8,
+        "fat": 7.8,
+        "carbs": 51.7,
+        "fiber": 4.9
+    },
+    "kulfi": {
+        "calories": 327,
+        "protein": 10.2,
+        "fat": 23.1,
+        "carbs": 41.4,
+        "fiber": 1.6
+    },
+    "masala_dosa": {
+        "calories": 360,
+        "protein": 4.5,
+        "fat": 20.6,
+        "carbs": 31.3,
+        "fiber": 6.7
+    },
+    "momos": {
+        "calories": 152,
+        "protein": 5.9,
+        "fat": 19.4,
+        "carbs": 29.6,
+        "fiber": 1.2
+    },
+    "omelette": {
+        "calories": 378,
+        "protein": 6.5,
+        "fat": 12.6,
+        "carbs": 58.5,
+        "fiber": 6.1
+    },
+    "paani_puri": {
+        "calories": 338,
+        "protein": 7.6,
+        "fat": 14.4,
+        "carbs": 42.4,
+        "fiber": 7.4
+    },
+    "pakode": {
+        "calories": 302,
+        "protein": 13.9,
+        "fat": 11.6,
+        "carbs": 25.3,
+        "fiber": 7.8
+    },
+    "pav_bhaji": {
+        "calories": 333,
+        "protein": 12.5,
+        "fat": 14.9,
+        "carbs": 20.9,
+        "fiber": 3.4
+    },
+    "pizza": {
+        "calories": 375,
+        "protein": 12.9,
+        "fat": 18.9,
+        "carbs": 30.6,
+        "fiber": 8.2
+    },
+    "samosa": {
+        "calories": 352,
+        "protein": 15.1,
+        "fat": 22.8,
+        "carbs": 52.9,
+        "fiber": 1.0
+    },
+    "Sandwich": {
+        "calories": 365,
+        "protein": 17.4,
+        "fat": 12.4,
+        "carbs": 52.3,
+        "fiber": 3.4
+    },
+    "sushi": {
+        "calories": 367,
+        "protein": 6.8,
+        "fat": 21.1,
+        "carbs": 40.4,
+        "fiber": 4.9
+    },
+    "Taco": {
+        "calories": 231,
+        "protein": 14.4,
+        "fat": 5.1,
+        "carbs": 44.4,
+        "fiber": 5.9
+    },
+    "Taquito": {
+        "calories": 189,
+        "protein": 15.1,
+        "fat": 24.9,
+        "carbs": 42.0,
+        "fiber": 9.3
+    },
+    "puri": {
+        "calories": 331,
+        "protein": 16.8,
+        "fat": 5.5,
+        "carbs": 24.7,
+        "fiber": 2.6
+    }
+}
