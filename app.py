@@ -3,7 +3,7 @@ import os
 # ================= TF ENV (MUST BE FIRST) =================
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['TF_USE_LEGACY_KERAS'] = '1'   # IMPORTANT for Render
+os.environ['TF_USE_LEGACY_KERAS'] = '1'
 
 from flask import Flask, render_template, request, jsonify
 import tensorflow as tf
@@ -29,9 +29,7 @@ custom_cnn_model = None
 resnet_model = None
 vgg16_model = None
 
-class_indices = None
-class_names = None
-class_names_list = None
+class_names_list = []   # ✅ FIX: prevent None error
 
 custom_metrics = None
 resnet_metrics = None
@@ -39,12 +37,12 @@ vgg16_metrics = None
 
 food_data = None
 
-# ================= LOAD MODELS (LAZY SAFE LOADING) =================
+
+# ================= LOAD MODELS =================
 def load_models():
     global custom_cnn_model, resnet_model, vgg16_model
-    global class_indices, class_names, class_names_list
     global custom_metrics, resnet_metrics, vgg16_metrics
-    global food_data
+    global food_data, class_names_list
 
     print("Loading models...")
 
@@ -87,7 +85,7 @@ def load_models():
     print("✅ JSON Files Loaded Successfully")
 
 
-# ================= HELPER FUNCTIONS =================
+# ================= HELPERS =================
 def extract_class_metrics(metrics_data, predicted_class):
     block = metrics_data.get(predicted_class, {})
 
@@ -133,14 +131,14 @@ def preprocess_image(path):
 # ================= ROUTES =================
 @app.route('/')
 def home():
-    return render_template('index.html', class_names=class_names_list)
+    return render_template('index.html', class_names=class_names_list or [])
 
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
         if custom_cnn_model is None:
-            load_models()   # LOAD ONLY WHEN NEEDED
+            load_models()
 
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"})
@@ -203,8 +201,7 @@ def predict():
 
 # ================= RUN =================
 if __name__ == '__main__':
+    load_models()   # ✅ IMPORTANT: load before server starts
+
     port = int(os.environ.get("PORT", 5000))
-
-    load_models()   # load safely before serving
-
     app.run(host='0.0.0.0', port=port)
